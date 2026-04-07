@@ -1,0 +1,109 @@
+<header>
+    <button aria-label="Close" rel="prev" onclick="document.getElementById('config-dialog').close()"></button>
+    Config: {{ world_name }}
+    {% if is_active %}<mark>active</mark>{% endif %}
+</header>
+
+<form hx-post="/worlds/{{ world_name }}/config" hx-target="#world-list" hx-swap="outerHTML"
+      onclick="if(event.target.type==='submit') document.getElementById('config-dialog').close()">
+
+    <div class="grid">
+        <label>
+            Gamemode
+            <select name="gamemode">
+                {% for gm in gamemodes %}
+                <option value="{{ gm }}" {% if config.get('gamemode') == gm %}selected{% endif %}>{{ gm|capitalize }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label>
+            Difficulty
+            <select name="difficulty">
+                {% for d in difficulties %}
+                <option value="{{ d }}" {% if config.get('difficulty') == d %}selected{% endif %}>{{ d|capitalize }}</option>
+                {% endfor %}
+            </select>
+        </label>
+    </div>
+
+    <div class="grid">
+        <label>
+            Seed
+            <input type="text" name="level-seed" value="{{ config.get('level-seed', '') }}" placeholder="Random">
+        </label>
+        <label>
+            World Type
+            <select name="level-type">
+                {% for lt in level_types %}
+                <option value="{{ lt }}" {% if config.get('level-type') == lt %}selected{% endif %}>{{ lt.split(':')[1]|capitalize }}</option>
+                {% endfor %}
+            </select>
+        </label>
+    </div>
+
+    <div class="grid">
+        <label>
+            Max Players
+            <input type="number" name="max-players" value="{{ config.get('max-players', '10') }}" min="1" max="100">
+        </label>
+        <label>
+            View Distance
+            <input type="number" name="view-distance" value="{{ config.get('view-distance', '10') }}" min="2" max="32">
+        </label>
+        <label>
+            Simulation Distance
+            <input type="number" name="simulation-distance" value="{{ config.get('simulation-distance', '10') }}" min="2" max="32">
+        </label>
+        <label>
+            Spawn Protection
+            <input type="number" name="spawn-protection" value="{{ config.get('spawn-protection', '16') }}" min="0" max="256">
+        </label>
+    </div>
+
+    <label>
+        MOTD
+        <input type="text" name="motd" value="{{ config.get('motd', 'Minecraft Server') }}">
+    </label>
+
+    <fieldset>
+        <legend>Toggles</legend>
+        <label>
+            <input type="checkbox" name="pvp" value="on" {% if config.get('pvp', 'true') == 'true' %}checked{% endif %}>
+            PvP
+        </label>
+        <label>
+            <input type="checkbox" name="hardcore" value="on" {% if config.get('hardcore', 'false') == 'true' %}checked{% endif %}>
+            Hardcore
+        </label>
+        <label>
+            <input type="checkbox" name="spawn-monsters" value="on" {% if config.get('spawn-monsters', 'true') == 'true' %}checked{% endif %}>
+            Spawn Monsters
+        </label>
+        <label>
+            <input type="checkbox" name="spawn-animals" value="on" {% if config.get('spawn-animals', 'true') == 'true' %}checked{% endif %}>
+            Spawn Animals
+        </label>
+        <label>
+            <input type="checkbox" name="generate-structures" value="on" {% if config.get('generate-structures', 'true') == 'true' %}checked{% endif %}>
+            Generate Structures
+        </label>
+        <label>
+            <input type="checkbox" name="allow-nether" value="on" {% if config.get('allow-nether', 'true') == 'true' %}checked{% endif %}>
+            Allow Nether
+        </label>
+    </fieldset>
+
+    <footer>
+        <button type="submit">
+            {% if is_active %}Save & Restart{% else %}Save{% endif %}
+        </button>
+        <button type="button" class="secondary" onclick="document.getElementById('config-dialog').close()">
+            Cancel
+        </button>
+        {% if is_active %}
+        <small>Active world - server will restart to apply changes</small>
+        {% else %}
+        <small>Settings apply when this world is activated</small>
+        {% endif %}
+    </footer>
+</form>

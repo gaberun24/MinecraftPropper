@@ -4,29 +4,80 @@
 {% block content %}
 <h2>World Management</h2>
 
-<article>
-    <header>Upload New World</header>
-    <form hx-post="/worlds/upload" hx-target="#world-list" hx-swap="outerHTML"
-          hx-encoding="multipart/form-data">
-        <div class="grid">
+<div class="grid">
+    <article>
+        <header>Create New World</header>
+        <form hx-post="/worlds/create" hx-target="#world-list" hx-swap="outerHTML">
             <label>
                 World Name
                 <input type="text" name="name" placeholder="my_world" required
-                       pattern="[a-zA-Z0-9_\- ]+" title="Letters, numbers, underscore, hyphen, space only">
+                       pattern="[a-zA-Z0-9_\- ]+" title="Letters, numbers, underscore, hyphen, space">
+            </label>
+            <div class="grid">
+                <label>
+                    Gamemode
+                    <select name="gamemode">
+                        {% for gm in gamemodes %}
+                        <option value="{{ gm }}" {% if gm == 'survival' %}selected{% endif %}>{{ gm|capitalize }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <label>
+                    Difficulty
+                    <select name="difficulty">
+                        {% for d in difficulties %}
+                        <option value="{{ d }}" {% if d == 'normal' %}selected{% endif %}>{{ d|capitalize }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+            </div>
+            <div class="grid">
+                <label>
+                    Seed <small>(optional)</small>
+                    <input type="text" name="level-seed" placeholder="Leave empty for random">
+                </label>
+                <label>
+                    World Type
+                    <select name="level-type">
+                        {% for lt in level_types %}
+                        <option value="{{ lt }}" {% if lt == 'minecraft:normal' %}selected{% endif %}>{{ lt.split(':')[1]|capitalize }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+            </div>
+            <label>
+                <input type="checkbox" name="generate-structures" value="true" checked>
+                Generate structures (villages, temples, etc.)
+            </label>
+            <button type="submit">Create World</button>
+        </form>
+    </article>
+
+    <article>
+        <header>Upload World (.zip)</header>
+        <form hx-post="/worlds/upload" hx-target="#world-list" hx-swap="outerHTML"
+              hx-encoding="multipart/form-data">
+            <label>
+                World Name
+                <input type="text" name="name" placeholder="imported_world" required
+                       pattern="[a-zA-Z0-9_\- ]+">
             </label>
             <label>
-                World File (.zip)
+                File
                 <input type="file" name="file" accept=".zip" required>
             </label>
-        </div>
-        <button type="submit">
-            <span class="htmx-indicator" aria-busy="true"></span>
-            Upload World
-        </button>
-    </form>
-</article>
+            <button type="submit" class="outline">Upload</button>
+        </form>
+    </article>
+</div>
 
 <div id="world-list">
     {% include "partials/world_list.html" %}
 </div>
+
+<dialog id="config-dialog">
+    <article id="config-dialog-content" style="min-width:50vw;">
+        <!-- loaded via htmx -->
+    </article>
+</dialog>
 {% endblock %}

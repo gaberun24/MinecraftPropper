@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import re
 import shutil
 import tarfile
@@ -27,6 +28,29 @@ _world_lock = asyncio.Lock()
 
 # Characters allowed in world names
 _SAFE_NAME = re.compile(r"^[a-zA-Z0-9_\- ]+$")
+
+# World-configurable server.properties keys
+WORLD_CONFIG_KEYS = [
+    "gamemode",
+    "difficulty",
+    "hardcore",
+    "pvp",
+    "spawn-monsters",
+    "spawn-animals",
+    "generate-structures",
+    "level-seed",
+    "level-type",
+    "max-players",
+    "view-distance",
+    "simulation-distance",
+    "spawn-protection",
+    "allow-nether",
+    "motd",
+]
+
+GAMEMODE_OPTIONS = ["survival", "creative", "adventure", "spectator"]
+DIFFICULTY_OPTIONS = ["peaceful", "easy", "normal", "hard"]
+LEVEL_TYPE_OPTIONS = ["minecraft:normal", "minecraft:flat", "minecraft:large_biomes", "minecraft:amplified"]
 
 
 def _world_dirs(base: Path, name: str) -> list[Path]:
@@ -144,8 +168,9 @@ async def activate_world(settings: Settings, name: str) -> tuple[bool, str]:
             await stop_server(settings)
             await asyncio.sleep(3)
 
-        # Update server.properties
+        # Update server.properties + apply world config
         _set_active_world(settings, name)
+        _apply_world_config_to_properties(settings, name)
 
         # Start server if it was running
         if was_running:
@@ -354,3 +379,127 @@ async def delete_world(settings: Settings, name: str) -> tuple[bool, str]:
             shutil.rmtree(d)
 
     return True, f"World '{name}' deleted (snapshot saved)"
+
+
+# --- World config system ---
+
+def _world_configs_path(settings: Settings) -> Path:
+    return settings.minecraft_dir / "world_configs.json"
+
+
+def _load_world_configs(settings: Settings) -> dict[str, dict]:
+    path = _world_configs_path(settings)
+    if path.exists():
+        return json.loads(path.read_text())
+    return {}
+
+
+def _save_world_configs(settings: Settings, configs: dict[str, dict]) -> None:
+    path = _world_configs_path(settings)
+    path.write_text(json.dumps(configs, indent=2))
+
+
+def get_world_config(settings: Settings, name: str) -> dict[str, str]:
+    """Get config for a world. Falls back to current server.properties values."""
+    configs = _load_world_configs(settings)
+    if name in configs:
+        return configs[name]
+
+    # Read current server.properties as defaults
+    props = _parse_properties(settings.server_properties_path)
+    return {k: props.get(k, "") for k in WORLD_CONFIG_KEYS}
+
+
+def save_world_config(settings: Settings, name: str, config: dict[str, str]) -> None:
+    """Save config for a world."""
+    configs = _load_world_configs(settings)
+    configs[name] = config
+    _save_world_configs(settings, configs)
+
+
+def _apply_world_config_to_properties(settings: Settings, name: str) -> None:
+    """Apply a world's config to server.properties."""
+    config = get_world_config(settings, name)
+    props_path = settings.server_properties_path
+    if not props_path.exists():
+        return
+
+    content = props_path.read_text()
+    for key, value in config.items():
+        if key in WORLD_CONFIG_KEYS and value != "":
+            pattern = rf"^{re.escape(key)}=.*$"
+            replacement = f"{key}={value}"
+            if re.search(pattern, content, flags=re.MULTILINE):
+                content = re.sub(pattern, replacement, content, flags=re.MULTILINE)
+            else:
+                content += f"\n{replacement}"
+
+    props_path.write_text(content)
+
+
+async def create_world(
+    settings: Settings,
+    name: str,
+    config: dict[str, str],
+) -> tuple[bool, str]:
+    """Create a new world by setting it active and letting the server generate it."""
+    if not _SAFE_NAME.match(name):
+        return False, "Invalid world name. Use only letters, numbers, underscore, hyphen, space."
+
+    mc_dir = settings.minecraft_dir
+    if (mc_dir / name).exists():
+        return False, f"World '{name}' already exists"
+
+    if _world_lock.locked():
+        return False, "Another world operation is in progress"
+
+    async with _world_lock:
+        was_running = await _is_server_running(settings)
+        if was_running:
+            await send_command("say Creating new world, server restarting...", settings)
+            await asyncio.sleep(2)
+            await stop_server(settings)
+            await asyncio.sleep(3)
+
+        # Save world config
+        save_world_config(settings, name, config)
+
+        # Set as active world and apply config
+        _set_active_world(settings, name)
+        _apply_world_config_to_properties(settings, name)
+
+        # Start server -- it will generate the new world automatically
+        if was_running:
+            await start_server(settings)
+
+        return True, f"World '{name}' created. Server will generate it on start."
+
+
+async def update_world_config(
+    settings: Settings,
+    name: str,
+    config: dict[str, str],
+) -> tuple[bool, str]:
+    """Update config for a world. If it's the active world, restart to apply."""
+    mc_dir = settings.minecraft_dir
+    if not _is_world_dir(mc_dir / name):
+        return False, f"World '{name}' not found"
+
+    save_world_config(settings, name, config)
+
+    active = _get_active_world(settings)
+    if active == name:
+        # Apply to server.properties and restart
+        _apply_world_config_to_properties(settings, name)
+
+        was_running = await _is_server_running(settings)
+        if was_running:
+            await send_command("say Applying world config changes, restarting...", settings)
+            await asyncio.sleep(2)
+            await stop_server(settings)
+            await asyncio.sleep(3)
+            await start_server(settings)
+
+        return True, f"Config updated and applied for '{name}'"
+
+    return True, f"Config saved for '{name}' (will apply when activated)"

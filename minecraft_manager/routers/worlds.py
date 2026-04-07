@@ -25,13 +25,71 @@ async def worlds_page(request: Request):
     worlds = world_service.list_worlds(settings)
     return request.app.state.templates.TemplateResponse(
         request, "worlds.html",
-        {"active_page": "worlds", "worlds": worlds},
+        {
+            "active_page": "worlds",
+            "worlds": worlds,
+            "gamemodes": world_service.GAMEMODE_OPTIONS,
+            "difficulties": world_service.DIFFICULTY_OPTIONS,
+            "level_types": world_service.LEVEL_TYPE_OPTIONS,
+        },
     )
 
 
 @router.get("/list", response_class=HTMLResponse)
 async def world_list_partial(request: Request):
     return _world_list_response(request)
+
+
+@router.post("/create", response_class=HTMLResponse)
+async def create(request: Request):
+    settings = get_settings()
+    form = await request.form()
+    name = str(form.get("name", "")).strip()
+    config = {key: str(form.get(key, "")) for key in world_service.WORLD_CONFIG_KEYS if form.get(key)}
+    ok, msg = await world_service.create_world(settings, name, config)
+    return _world_list_response(request, msg, "success" if ok else "error")
+
+
+@router.get("/{name}/config", response_class=HTMLResponse)
+async def get_config(name: str, request: Request):
+    settings = get_settings()
+    config = world_service.get_world_config(settings, name)
+    active = world_service._get_active_world(settings)
+    return request.app.state.templates.TemplateResponse(
+        request, "partials/world_config.html",
+        {
+            "world_name": name,
+            "config": config,
+            "is_active": name == active,
+            "gamemodes": world_service.GAMEMODE_OPTIONS,
+            "difficulties": world_service.DIFFICULTY_OPTIONS,
+            "level_types": world_service.LEVEL_TYPE_OPTIONS,
+        },
+    )
+
+
+@router.post("/{name}/config", response_class=HTMLResponse)
+async def save_config(name: str, request: Request):
+    settings = get_settings()
+    form = await request.form()
+    config = {}
+    for key in world_service.WORLD_CONFIG_KEYS:
+        val = form.get(key)
+        if val is not None:
+            # Handle checkboxes (on/off -> true/false)
+            if key in ("hardcore", "pvp", "spawn-monsters", "spawn-animals", "generate-structures", "allow-nether"):
+                config[key] = "true" if val == "on" else str(val)
+            else:
+                config[key] = str(val)
+        else:
+            # Unchecked checkboxes don't appear in form data
+            if key in ("hardcore", "pvp", "spawn-monsters", "spawn-animals", "generate-structures", "allow-nether"):
+                config[key] = "false"
+
+    ok, msg = await world_service.update_world_config(settings, name, config)
+
+    # Return updated world list
+    return _world_list_response(request, msg, "success" if ok else "error")
 
 
 @router.post("/{name}/activate", response_class=HTMLResponse)
