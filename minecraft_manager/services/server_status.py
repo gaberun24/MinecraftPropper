@@ -63,7 +63,7 @@ async def _is_server_running(settings: Settings) -> bool:
         return Path(settings.minecraft_dir / ".dev_running").exists()
     try:
         proc = await asyncio.create_subprocess_exec(
-            "systemctl", "is-active", "--quiet", settings.systemd_unit,
+            "sudo", "systemctl", "is-active", "--quiet", settings.systemd_unit,
             stdout=asyncio.subprocess.DEVNULL,
             stderr=asyncio.subprocess.DEVNULL,
         )
@@ -78,7 +78,7 @@ async def _get_uptime(settings: Settings) -> str:
         return "dev mode"
     try:
         proc = await asyncio.create_subprocess_exec(
-            "systemctl", "show", settings.systemd_unit,
+            "sudo", "systemctl", "show", settings.systemd_unit,
             "--property=ActiveEnterTimestamp",
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.DEVNULL,

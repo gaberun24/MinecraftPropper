@@ -7,7 +7,7 @@ from minecraft_manager.config import Settings
 async def _run_systemctl(action: str, settings: Settings) -> tuple[bool, str]:
     try:
         proc = await asyncio.create_subprocess_exec(
-            "systemctl", action, settings.systemd_unit,
+            "sudo", "systemctl", action, settings.systemd_unit,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
