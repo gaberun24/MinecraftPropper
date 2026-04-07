@@ -19,6 +19,12 @@ echo "deb [signed-by=/usr/share/keyrings/adoptium.gpg] https://packages.adoptium
 apt-get update
 apt-get install -y temurin-21-jre
 
+# --- mDNS (Avahi) ---
+echo "Installing Avahi for mDNS (minecraft.local)..."
+apt-get install -y avahi-daemon
+systemctl enable avahi-daemon
+systemctl start avahi-daemon
+
 # --- Python + pip ---
 echo "Installing Python..."
 apt-get install -y python3 python3-pip python3-venv
@@ -146,7 +152,8 @@ echo "Start Minecraft:  systemctl start minecraft"
 echo "Start Manager:    systemctl start minecraft-manager"
 echo "Manager URL:      https://minecraft.local/"
 echo ""
+echo "mDNS: minecraft.local is advertised via Avahi (no DNS config needed)"
+echo ""
 echo "Next steps:"
 echo "1. Start the Minecraft server and let it generate the world"
 echo "2. Configure Geyser: /opt/minecraft/plugins/Geyser-Spigot/config.yml"
-echo "3. Set up DNS: minecraft.local -> this LXC's IP"
