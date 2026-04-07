@@ -84,8 +84,11 @@ systemctl enable minecraft
 # --- Install Manager ---
 echo "Installing Minecraft Manager..."
 MANAGER_DIR=/opt/minecraft-manager
-mkdir -p "$MANAGER_DIR"
-cp -r "$(dirname "$0")/../"* "$MANAGER_DIR/"
+SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+if [ "$SCRIPT_DIR" != "$MANAGER_DIR" ]; then
+    mkdir -p "$MANAGER_DIR"
+    cp -r "$SCRIPT_DIR/"* "$MANAGER_DIR/"
+fi
 cd "$MANAGER_DIR"
 python3 -m venv venv
 source venv/bin/activate
