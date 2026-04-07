@@ -26,8 +26,8 @@ from minecraft_manager.services.server_status import _is_server_running, _parse_
 # Lock for world operations
 _world_lock = asyncio.Lock()
 
-# Characters allowed in world names
-_SAFE_NAME = re.compile(r"^[a-zA-Z0-9_\- ]+$")
+# Characters allowed in world names (Unicode letters allowed)
+_SAFE_NAME = re.compile(r"^[\w\- ]+$", re.UNICODE)
 
 # World-configurable server.properties keys
 WORLD_CONFIG_KEYS = [
