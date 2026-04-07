@@ -12,8 +12,8 @@ router = APIRouter()
 @router.get("/console", response_class=HTMLResponse)
 async def console_page(request: Request):
     return request.app.state.templates.TemplateResponse(
-        "console.html",
-        {"request": request, "active_page": "console"},
+        request, "console.html",
+        {"active_page": "console"},
     )
 
 

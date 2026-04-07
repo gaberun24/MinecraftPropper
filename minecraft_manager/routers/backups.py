@@ -14,9 +14,8 @@ async def backups_page(request: Request):
     backups = backup_service.list_backups(settings)
     status = await get_server_status(settings)
     return request.app.state.templates.TemplateResponse(
-        "backups.html",
+        request, "backups.html",
         {
-            "request": request,
             "active_page": "backups",
             "backups": backups,
             "server_running": status.running,
@@ -30,8 +29,8 @@ async def backup_list_partial(request: Request):
     backup_type = request.query_params.get("type")
     backups = backup_service.list_backups(settings, backup_type)
     return request.app.state.templates.TemplateResponse(
-        "partials/backup_list.html",
-        {"request": request, "backups": backups},
+        request, "partials/backup_list.html",
+        {"backups": backups},
     )
 
 
@@ -55,8 +54,8 @@ async def create_backup(request: Request):
     msg_type = "success" if entry else "error"
 
     return request.app.state.templates.TemplateResponse(
-        "partials/backup_list.html",
-        {"request": request, "backups": backups, "flash": message, "flash_type": msg_type},
+        request, "partials/backup_list.html",
+        {"backups": backups, "flash": message, "flash_type": msg_type},
     )
 
 
@@ -67,7 +66,6 @@ async def restore_backup(request: Request):
     backup_path = str(form.get("backup_path", ""))
     is_world = form.get("is_world") == "true"
 
-    # Stop server before restore
     from minecraft_manager.services.server_control import stop_server, start_server
 
     status = await get_server_status(settings)
@@ -82,8 +80,8 @@ async def restore_backup(request: Request):
 
     backups = backup_service.list_backups(settings)
     return request.app.state.templates.TemplateResponse(
-        "partials/backup_list.html",
-        {"request": request, "backups": backups, "flash": msg, "flash_type": "success" if ok else "error"},
+        request, "partials/backup_list.html",
+        {"backups": backups, "flash": msg, "flash_type": "success" if ok else "error"},
     )
 
 
@@ -93,6 +91,6 @@ async def delete_backup(backup_path: str, request: Request):
     settings = get_settings()
     backups = backup_service.list_backups(settings)
     return request.app.state.templates.TemplateResponse(
-        "partials/backup_list.html",
-        {"request": request, "backups": backups, "flash": msg, "flash_type": "success" if ok else "error"},
+        request, "partials/backup_list.html",
+        {"backups": backups, "flash": msg, "flash_type": "success" if ok else "error"},
     )

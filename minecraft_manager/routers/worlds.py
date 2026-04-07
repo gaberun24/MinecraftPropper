@@ -10,11 +10,13 @@ router = APIRouter(prefix="/worlds")
 def _world_list_response(request: Request, flash: str = "", flash_type: str = "success"):
     settings = get_settings()
     worlds = world_service.list_worlds(settings)
-    ctx = {"request": request, "worlds": worlds}
+    ctx = {"worlds": worlds}
     if flash:
         ctx["flash"] = flash
         ctx["flash_type"] = flash_type
-    return request.app.state.templates.TemplateResponse("partials/world_list.html", ctx)
+    return request.app.state.templates.TemplateResponse(
+        request, "partials/world_list.html", ctx,
+    )
 
 
 @router.get("", response_class=HTMLResponse)
@@ -22,8 +24,8 @@ async def worlds_page(request: Request):
     settings = get_settings()
     worlds = world_service.list_worlds(settings)
     return request.app.state.templates.TemplateResponse(
-        "worlds.html",
-        {"request": request, "active_page": "worlds", "worlds": worlds},
+        request, "worlds.html",
+        {"active_page": "worlds", "worlds": worlds},
     )
 
 

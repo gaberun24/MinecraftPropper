@@ -32,9 +32,8 @@ async def settings_page(request: Request):
     settings = get_settings()
     mgr_settings = _load_manager_settings(settings)
     return request.app.state.templates.TemplateResponse(
-        "settings.html",
+        request, "settings.html",
         {
-            "request": request,
             "active_page": "settings",
             "mgr": mgr_settings,
             "settings": settings,
@@ -58,9 +57,8 @@ async def save_settings(request: Request):
     _save_manager_settings(settings, mgr_settings)
 
     return request.app.state.templates.TemplateResponse(
-        "settings.html",
+        request, "settings.html",
         {
-            "request": request,
             "active_page": "settings",
             "mgr": mgr_settings,
             "settings": settings,

@@ -12,8 +12,8 @@ async def dashboard(request: Request):
     settings = get_settings()
     status = await get_server_status(settings)
     return request.app.state.templates.TemplateResponse(
-        "dashboard.html",
-        {"request": request, "status": status, "active_page": "dashboard"},
+        request, "dashboard.html",
+        {"status": status, "active_page": "dashboard"},
     )
 
 
@@ -22,6 +22,6 @@ async def status_partial(request: Request):
     settings = get_settings()
     status = await get_server_status(settings)
     return request.app.state.templates.TemplateResponse(
-        "partials/server_status.html",
-        {"request": request, "status": status},
+        request, "partials/server_status.html",
+        {"status": status},
     )

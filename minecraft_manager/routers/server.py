@@ -12,8 +12,8 @@ async def _action_response(request: Request) -> HTMLResponse:
     settings = get_settings()
     status = await get_server_status(settings)
     return request.app.state.templates.TemplateResponse(
-        "partials/server_status.html",
-        {"request": request, "status": status},
+        request, "partials/server_status.html",
+        {"status": status},
     )
 
 

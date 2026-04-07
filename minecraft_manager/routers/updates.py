@@ -12,9 +12,8 @@ async def updates_page(request: Request):
     settings = get_settings()
     installed = read_installed_versions(settings)
     return request.app.state.templates.TemplateResponse(
-        "updates.html",
+        request, "updates.html",
         {
-            "request": request,
             "active_page": "updates",
             "installed": installed,
             "check": None,
@@ -33,9 +32,8 @@ async def check_updates_partial(request: Request):
         installed["_error"] = str(e)
 
     return request.app.state.templates.TemplateResponse(
-        "partials/update_status.html",
+        request, "partials/update_status.html",
         {
-            "request": request,
             "installed": installed,
             "check": update_check,
         },
@@ -46,7 +44,6 @@ async def check_updates_partial(request: Request):
 async def apply_update_endpoint(component: str, request: Request):
     settings = get_settings()
 
-    # First check what's available
     update_check = await check_updates(settings)
 
     build = None
@@ -62,7 +59,6 @@ async def apply_update_endpoint(component: str, request: Request):
             '<div class="flash error">No update available for this component</div>'
         )
 
-    # Run update and collect results
     messages = []
     async for msg in apply_update(settings, component, build):
         messages.append(msg)
@@ -72,9 +68,8 @@ async def apply_update_endpoint(component: str, request: Request):
     is_error = any("ERROR" in m for m in messages)
 
     return request.app.state.templates.TemplateResponse(
-        "partials/update_status.html",
+        request, "partials/update_status.html",
         {
-            "request": request,
             "installed": installed,
             "check": None,
             "flash": result_msg,
