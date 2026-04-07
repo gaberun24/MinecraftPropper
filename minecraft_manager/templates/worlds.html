@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Worlds - Minecraft Manager{% endblock %}
+
+{% block content %}
+<h2>World Management</h2>
+
+<article>
+    <header>Upload New World</header>
+    <form hx-post="/worlds/upload" hx-target="#world-list" hx-swap="outerHTML"
+          hx-encoding="multipart/form-data">
+        <div class="grid">
+            <label>
+                World Name
+                <input type="text" name="name" placeholder="my_world" required
+                       pattern="[a-zA-Z0-9_\- ]+" title="Letters, numbers, underscore, hyphen, space only">
+            </label>
+            <label>
+                World File (.zip)
+                <input type="file" name="file" accept=".zip" required>
+            </label>
+        </div>
+        <button type="submit">
+            <span class="htmx-indicator" aria-busy="true"></span>
+            Upload World
+        </button>
+    </form>
+</article>
+
+<div id="world-list">
+    {% include "partials/world_list.html" %}
+</div>
+{% endblock %}

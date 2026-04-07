@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Backups - Minecraft Manager{% endblock %}
+
+{% block content %}
+<h2>Backup Management</h2>
+
+<article>
+    <header>Create Backup</header>
+    <form hx-post="/backups/create" hx-target="#backup-list" hx-swap="outerHTML">
+        <div role="group">
+            <select name="backup_type">
+                <option value="daily">Daily Backup</option>
+                <option value="monthly">Monthly Backup</option>
+                <option value="update">Pre-Update Backup</option>
+            </select>
+            <button type="submit">
+                <span class="htmx-indicator" aria-busy="true"></span>
+                Backup Now
+            </button>
+        </div>
+    </form>
+    {% if server_running %}
+    <small>Server is running - safe save flow will be used (save-off/save-on)</small>
+    {% else %}
+    <small>Server is stopped - direct file backup</small>
+    {% endif %}
+</article>
+
+<div id="backup-list">
+    {% include "partials/backup_list.html" %}
+</div>
+{% endblock %}

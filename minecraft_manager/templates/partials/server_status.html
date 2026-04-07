@@ -1,0 +1,31 @@
+<div id="server-status" hx-get="/api/status" hx-trigger="every 5s" hx-swap="outerHTML">
+    <article>
+        <header>
+            Server Status:
+            {% if status.running %}
+                <mark>Running</mark>
+                {% if status.uptime %}<small> &mdash; uptime: {{ status.uptime }}</small>{% endif %}
+            {% else %}
+                <mark class="stopped">Stopped</mark>
+            {% endif %}
+        </header>
+        <div class="grid">
+            <div>
+                <small>World</small>
+                <p><strong>{{ status.level_name }}</strong></p>
+            </div>
+            <div>
+                <small>Players</small>
+                <p><strong>{{ status.player_count }}/{{ status.max_players }}</strong></p>
+            </div>
+            <div>
+                <small>Minecraft</small>
+                <p><strong>{{ status.versions.minecraft }}</strong></p>
+            </div>
+            <div>
+                <small>Paper</small>
+                <p><strong>{{ status.versions.paper }}</strong></p>
+            </div>
+        </div>
+    </article>
+</div>

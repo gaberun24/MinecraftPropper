@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - Minecraft Manager{% endblock %}
+
+{% block content %}
+<h2>Dashboard</h2>
+
+<div id="server-status" hx-get="/api/status" hx-trigger="every 5s" hx-swap="outerHTML">
+    {% include "partials/server_status.html" %}
+</div>
+
+<div class="grid">
+    <article>
+        <header>Quick Actions</header>
+        {% if status.running %}
+        <div role="group">
+            <button hx-post="/server/stop" hx-target="#server-status" hx-swap="outerHTML"
+                    hx-confirm="Stop the server?" class="secondary">
+                Stop
+            </button>
+            <button hx-post="/server/restart" hx-target="#server-status" hx-swap="outerHTML"
+                    hx-confirm="Restart the server?">
+                Restart
+            </button>
+        </div>
+        {% else %}
+        <button hx-post="/server/start" hx-target="#server-status" hx-swap="outerHTML">
+            Start Server
+        </button>
+        {% endif %}
+        <hr>
+        <div role="group">
+            <a href="/backups" role="button" class="outline">Backups</a>
+            <a href="/console" role="button" class="outline">Console</a>
+        </div>
+    </article>
+
+    <article>
+        <header>Players ({{ status.player_count }}/{{ status.max_players }})</header>
+        {% if status.players %}
+        <ul>
+            {% for player in status.players %}
+            <li>
+                {{ player.name }}
+                {% if player.is_bedrock %}<small>(Bedrock)</small>{% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+        {% elif status.running %}
+        <p><em>No players online</em></p>
+        {% else %}
+        <p><em>Server is offline</em></p>
+        {% endif %}
+    </article>
+</div>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Console - Minecraft Manager{% endblock %}
+
+{% block content %}
+<h2>Server Console</h2>
+
+<div id="console-output"></div>
+
+<form id="console-form" onsubmit="return false;" style="margin-top: 0.5rem;">
+    <div role="group">
+        <input type="text" id="console-input" placeholder="Type a command..." autocomplete="off">
+        <button type="submit" onclick="document.getElementById('console-input').dispatchEvent(new KeyboardEvent('keydown', {key: 'Enter'}))">
+            Send
+        </button>
+    </div>
+</form>
+
+<small>
+    Tip: Type server commands directly (e.g., <code>list</code>, <code>say Hello</code>, <code>tp Player 0 64 0</code>)
+</small>
+{% endblock %}

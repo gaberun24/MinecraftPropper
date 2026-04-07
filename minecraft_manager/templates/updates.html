@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Updates - Minecraft Manager{% endblock %}
+
+{% block content %}
+<h2>Update Management</h2>
+
+<p>
+    <button hx-get="/updates/check" hx-target="#update-status" hx-swap="outerHTML"
+            hx-indicator="#check-spinner">
+        Check for Updates
+    </button>
+    <span id="check-spinner" class="htmx-indicator" aria-busy="true">Checking...</span>
+</p>
+
+<div id="update-status">
+    {% include "partials/update_status.html" %}
+</div>
+{% endblock %}

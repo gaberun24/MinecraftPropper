@@ -1,0 +1,70 @@
+<div id="backup-list">
+    {% if flash is defined and flash %}
+    <div class="flash {{ flash_type|default('success') }}">{{ flash }}</div>
+    {% endif %}
+
+    <article>
+        <header>
+            Backups
+            <span style="float:right">
+                <small>
+                    <a hx-get="/backups/list" hx-target="#backup-list" hx-swap="outerHTML" href="#">All</a> |
+                    <a hx-get="/backups/list?type=daily" hx-target="#backup-list" hx-swap="outerHTML" href="#">Daily</a> |
+                    <a hx-get="/backups/list?type=monthly" hx-target="#backup-list" hx-swap="outerHTML" href="#">Monthly</a> |
+                    <a hx-get="/backups/list?type=update" hx-target="#backup-list" hx-swap="outerHTML" href="#">Update</a> |
+                    <a hx-get="/backups/list?type=world" hx-target="#backup-list" hx-swap="outerHTML" href="#">World</a>
+                </small>
+            </span>
+        </header>
+
+        {% if backups %}
+        <figure>
+        <table>
+            <thead>
+                <tr>
+                    <th>Filename</th>
+                    <th>Type</th>
+                    <th>Size</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for backup in backups %}
+                <tr>
+                    <td>
+                        {{ backup.filename }}
+                        {% if backup.world_name %}<br><small>World: {{ backup.world_name }}</small>{% endif %}
+                    </td>
+                    <td><small>{{ backup.backup_type }}</small></td>
+                    <td>{{ backup.size_human }}</td>
+                    <td><small>{{ backup.created.strftime('%Y-%m-%d %H:%M') }}</small></td>
+                    <td>
+                        <div role="group">
+                            <button class="outline secondary" style="padding:0.25rem 0.5rem; font-size:0.8rem;"
+                                    hx-post="/backups/restore"
+                                    hx-target="#backup-list"
+                                    hx-swap="outerHTML"
+                                    hx-vals='{"backup_path": "{{ backup.path }}", "is_world": "{{ 'true' if backup.backup_type == 'world' else 'false' }}"}'
+                                    hx-confirm="Restore from {{ backup.filename }}? This will overwrite current data and restart the server.">
+                                Restore
+                            </button>
+                            <button class="outline secondary" style="padding:0.25rem 0.5rem; font-size:0.8rem;"
+                                    hx-delete="/backups/{{ backup.path }}"
+                                    hx-target="#backup-list"
+                                    hx-swap="outerHTML"
+                                    hx-confirm="Delete {{ backup.filename }}?">
+                                Delete
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </figure>
+        {% else %}
+        <p><em>No backups found</em></p>
+        {% endif %}
+    </article>
+</div>

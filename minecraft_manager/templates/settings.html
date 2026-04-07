@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Settings - Minecraft Manager{% endblock %}
+
+{% block content %}
+<h2>Settings</h2>
+
+{% if flash is defined and flash %}
+<div class="flash {{ flash_type|default('success') }}">{{ flash }}</div>
+{% endif %}
+
+<article>
+    <header>Manager Configuration</header>
+    <form method="post" action="/settings">
+        <fieldset>
+            <legend>Updates</legend>
+            <label>
+                <input type="checkbox" name="auto_update_enabled" role="switch"
+                       {% if mgr.auto_update_enabled %}checked{% endif %}>
+                Auto-update enabled (daily at 4:00 AM)
+            </label>
+            <label>
+                Player notification time (seconds)
+                <input type="number" name="player_notify_seconds"
+                       value="{{ mgr.player_notify_seconds }}" min="0" max="300">
+                <small>How long to warn players before an update restart</small>
+            </label>
+            <label>
+                Health check timeout (seconds)
+                <input type="number" name="health_check_timeout"
+                       value="{{ mgr.health_check_timeout }}" min="30" max="300">
+                <small>How long to wait for server to respond after update</small>
+            </label>
+            <label>
+                Paper builds to keep
+                <input type="number" name="builds_to_keep"
+                       value="{{ mgr.builds_to_keep }}" min="1" max="20">
+            </label>
+        </fieldset>
+
+        <fieldset>
+            <legend>Backups</legend>
+            <label>
+                Daily backup retention (days)
+                <input type="number" name="daily_retention"
+                       value="{{ mgr.daily_retention }}" min="1" max="30">
+                <small>Monthly and update backups are always kept</small>
+            </label>
+        </fieldset>
+
+        <button type="submit">Save Settings</button>
+    </form>
+</article>
+
+<article>
+    <header>Server Paths (read-only)</header>
+    <table>
+        <tr><td>Minecraft directory</td><td><code>{{ settings.minecraft_dir }}</code></td></tr>
+        <tr><td>Versions directory</td><td><code>{{ settings.versions_dir }}</code></td></tr>
+        <tr><td>Backup directory</td><td><code>{{ settings.backup_dir }}</code></td></tr>
+        <tr><td>Named pipe</td><td><code>{{ settings.stdin_pipe }}</code></td></tr>
+        <tr><td>Systemd unit</td><td><code>{{ settings.systemd_unit }}</code></td></tr>
+        <tr><td>Java port</td><td><code>{{ settings.java_port }}</code></td></tr>
+        <tr><td>Bedrock port</td><td><code>{{ settings.bedrock_port }}</code></td></tr>
+        <tr><td>Dev mode</td><td><code>{{ settings.dev_mode }}</code></td></tr>
+    </table>
+</article>
+{% endblock %}

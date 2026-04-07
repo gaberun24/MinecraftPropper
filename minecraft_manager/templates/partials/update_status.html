@@ -1,0 +1,98 @@
+<div id="update-status">
+    {% if flash is defined and flash %}
+    <div class="flash {{ flash_type|default('success') }}">{{ flash }}</div>
+    {% endif %}
+
+    <div class="grid">
+        <!-- Paper -->
+        <article>
+            <header>Paper (Minecraft Server)</header>
+            <p>
+                <small>Installed:</small><br>
+                {% if installed.get('paper') %}
+                <strong>MC {{ installed['paper'].version }} - build {{ installed['paper'].build }}</strong>
+                {% else %}
+                <em>Unknown</em>
+                {% endif %}
+            </p>
+            {% if check and check.paper %}
+            <p>
+                <small>Latest:</small><br>
+                <strong>MC {{ check.paper.version }} - build {{ check.paper.build }}</strong>
+            </p>
+            {% if check.paper_update_available %}
+                {% if not check.geyser_compatible %}
+                <p><mark class="stopped">Geyser may not support MC {{ check.paper.version }} yet!</mark></p>
+                {% endif %}
+                <button hx-post="/updates/apply/paper" hx-target="#update-status" hx-swap="outerHTML"
+                        hx-confirm="Update Paper to build {{ check.paper.build }}? Server will be restarted."
+                        {% if not check.geyser_compatible %}class="secondary"{% endif %}>
+                    Update Paper
+                </button>
+            {% else %}
+            <p><small>Up to date</small></p>
+            {% endif %}
+            {% endif %}
+        </article>
+
+        <!-- Geyser -->
+        <article>
+            <header>Geyser (Bedrock Proxy)</header>
+            <p>
+                <small>Installed:</small><br>
+                {% if installed.get('geyser') %}
+                <strong>{{ installed['geyser'].version }} - build {{ installed['geyser'].build }}</strong>
+                {% else %}
+                <em>Unknown</em>
+                {% endif %}
+            </p>
+            {% if check and check.geyser %}
+            <p>
+                <small>Latest:</small><br>
+                <strong>{{ check.geyser.version }} - build {{ check.geyser.build }}</strong>
+            </p>
+            {% if check.geyser_update_available %}
+                <button hx-post="/updates/apply/geyser" hx-target="#update-status" hx-swap="outerHTML"
+                        hx-confirm="Update Geyser? Server will be restarted.">
+                    Update Geyser
+                </button>
+            {% else %}
+            <p><small>Up to date</small></p>
+            {% endif %}
+            {% endif %}
+        </article>
+
+        <!-- Floodgate -->
+        <article>
+            <header>Floodgate (Bedrock Auth)</header>
+            <p>
+                <small>Installed:</small><br>
+                {% if installed.get('floodgate') %}
+                <strong>{{ installed['floodgate'].version }} - build {{ installed['floodgate'].build }}</strong>
+                {% else %}
+                <em>Unknown</em>
+                {% endif %}
+            </p>
+            {% if check and check.floodgate %}
+            <p>
+                <small>Latest:</small><br>
+                <strong>{{ check.floodgate.version }} - build {{ check.floodgate.build }}</strong>
+            </p>
+            {% if check.floodgate_update_available %}
+                <button hx-post="/updates/apply/floodgate" hx-target="#update-status" hx-swap="outerHTML"
+                        hx-confirm="Update Floodgate? Server will be restarted.">
+                    Update Floodgate
+                </button>
+            {% else %}
+            <p><small>Up to date</small></p>
+            {% endif %}
+            {% endif %}
+        </article>
+    </div>
+
+    {% if check and check.message %}
+    <article>
+        <p>{{ check.message }}</p>
+    </article>
+    {% endif %}
+</div>

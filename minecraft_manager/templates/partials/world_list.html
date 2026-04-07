@@ -1,0 +1,130 @@
+<div id="world-list">
+    {% if flash is defined and flash %}
+    <div class="flash {{ flash_type|default('success') }}">{{ flash }}</div>
+    {% endif %}
+
+    <article>
+        <header>Worlds</header>
+        {% if worlds %}
+        <figure>
+        <table>
+            <thead>
+                <tr>
+                    <th>World</th>
+                    <th>Size</th>
+                    <th>Dimensions</th>
+                    <th>Last Modified</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for world in worlds %}
+                <tr>
+                    <td>
+                        <strong>{{ world.name }}</strong>
+                        {% if world.is_active %} <mark>active</mark>{% endif %}
+                    </td>
+                    <td>{{ world.size_human }}</td>
+                    <td>
+                        <small>
+                            Overworld
+                            {% if world.has_nether %} + Nether{% endif %}
+                            {% if world.has_end %} + End{% endif %}
+                        </small>
+                    </td>
+                    <td>
+                        {% if world.last_modified %}
+                        <small>{{ world.last_modified.strftime('%Y-%m-%d %H:%M') }}</small>
+                        {% else %}-{% endif %}
+                    </td>
+                    <td>
+                        {% if not world.is_active %}
+                        <button class="outline" style="padding:0.2rem 0.5rem; font-size:0.75rem; margin:0.1rem;"
+                                hx-post="/worlds/{{ world.name }}/activate"
+                                hx-target="#world-list" hx-swap="outerHTML"
+                                hx-confirm="Activate '{{ world.name }}'? Server will restart.">
+                            Activate
+                        </button>
+                        {% endif %}
+
+                        <button class="outline" style="padding:0.2rem 0.5rem; font-size:0.75rem; margin:0.1rem;"
+                                hx-post="/worlds/{{ world.name }}/snapshot"
+                                hx-target="#world-list" hx-swap="outerHTML">
+                            Snapshot
+                        </button>
+
+                        <a href="/worlds/{{ world.name }}/download" role="button" class="outline"
+                           style="padding:0.2rem 0.5rem; font-size:0.75rem; margin:0.1rem;">
+                            Download
+                        </a>
+
+                        <button class="outline" style="padding:0.2rem 0.5rem; font-size:0.75rem; margin:0.1rem;"
+                                onclick="promptDuplicate('{{ world.name }}')">
+                            Duplicate
+                        </button>
+
+                        <button class="outline" style="padding:0.2rem 0.5rem; font-size:0.75rem; margin:0.1rem;"
+                                onclick="promptRename('{{ world.name }}')">
+                            Rename
+                        </button>
+
+                        {% if not world.is_active %}
+                        <button class="outline secondary" style="padding:0.2rem 0.5rem; font-size:0.75rem; margin:0.1rem;"
+                                hx-delete="/worlds/{{ world.name }}"
+                                hx-target="#world-list" hx-swap="outerHTML"
+                                hx-confirm="DELETE world '{{ world.name }}'? A snapshot will be created first, but the world will be permanently removed.">
+                            Delete
+                        </button>
+                        {% endif %}
+
+                        {% if world.snapshots %}
+                        <details style="margin-top:0.5rem;">
+                            <summary><small>Snapshots ({{ world.snapshots|length }})</small></summary>
+                            <ul>
+                                {% for snap in world.snapshots %}
+                                <li>
+                                    <small>{{ snap.filename }} ({{ snap.size_human }}, {{ snap.created.strftime('%Y-%m-%d %H:%M') }})</small>
+                                    <button class="outline secondary" style="padding:0.1rem 0.3rem; font-size:0.7rem;"
+                                            hx-post="/worlds/{{ world.name }}/restore"
+                                            hx-target="#world-list" hx-swap="outerHTML"
+                                            hx-vals='{"snapshot_path": "{{ snap.path }}"}'
+                                            hx-confirm="Restore '{{ world.name }}' from this snapshot? Current world data will be overwritten.">
+                                        Restore
+                                    </button>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </details>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </figure>
+        {% else %}
+        <p><em>No worlds found</em></p>
+        {% endif %}
+    </article>
+</div>
+
+<script>
+function promptDuplicate(worldName) {
+    const newName = prompt("New name for the duplicate:");
+    if (newName) {
+        htmx.ajax('POST', `/worlds/${worldName}/duplicate`, {
+            target: '#world-list', swap: 'outerHTML',
+            values: { new_name: newName }
+        });
+    }
+}
+function promptRename(worldName) {
+    const newName = prompt("New name for the world:");
+    if (newName) {
+        htmx.ajax('POST', `/worlds/${worldName}/rename`, {
+            target: '#world-list', swap: 'outerHTML',
+            values: { new_name: newName }
+        });
+    }
+}
+</script>

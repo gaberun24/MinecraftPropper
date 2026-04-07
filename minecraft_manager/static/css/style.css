@@ -1,0 +1,69 @@
+/* Minecraft Manager custom styles */
+
+nav a.active {
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+mark.stopped {
+    background-color: var(--pico-del-color);
+    color: var(--pico-background-color);
+}
+
+/* Console */
+#console-output {
+    background: var(--pico-code-background-color);
+    color: var(--pico-code-color);
+    font-family: var(--pico-font-family-monospace);
+    font-size: 0.85rem;
+    padding: 1rem;
+    height: 60vh;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    border-radius: var(--pico-border-radius);
+}
+
+#console-output .log-line {
+    margin: 0;
+    padding: 1px 0;
+}
+
+/* Flash messages */
+#flash-messages .flash {
+    padding: 0.75rem 1rem;
+    border-radius: var(--pico-border-radius);
+    margin-bottom: 0.5rem;
+    animation: fadeOut 5s forwards;
+}
+
+.flash.success { background: var(--pico-ins-color); }
+.flash.error { background: var(--pico-del-color); }
+.flash.warning { background: #f0ad4e; color: #000; }
+
+@keyframes fadeOut {
+    0%, 80% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+/* Progress indicator */
+.htmx-indicator {
+    display: none;
+}
+.htmx-request .htmx-indicator {
+    display: inline-block;
+}
+.htmx-request.htmx-indicator {
+    display: inline-block;
+}
+
+/* World/backup tables */
+table small {
+    color: var(--pico-muted-color);
+}
+
+/* Confirm modal */
+dialog .danger {
+    background: var(--pico-del-color);
+    border-color: var(--pico-del-color);
+}
